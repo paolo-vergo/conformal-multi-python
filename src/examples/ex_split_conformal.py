@@ -2,12 +2,12 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 from src.confidence_regions.split_conformal import conformal_multidim_split
-from src.plots.plot_split_conformal import plot_multidim_split
+from src.plots.plot_split_conformal import plot_multidim_split_custom
 from src.helpers.prediction_models import mean_multi
 
 # Parameters
-n = 40  # Number of training samples
-n0 = 2  # Number of prediction samples
+n = 9000  # Number of training samples
+n0 = 12  # Number of prediction samples
 p = 2  # Number of features
 mu = np.zeros(p)  # Mean vector for multivariate normal
 
@@ -31,9 +31,9 @@ fun = mean_multi()
 
 final_point = conformal_multidim_split(
     x=x, y=y, x0=x0,
-    train_fun=fun["train.fun"], predict_fun=fun["predict.fun"],
-    alpha=0.1, split=None, seed=None, randomized=False, seed_tau=None,
-    verbose=False, training_size=0.5, score="l2", s_type="st-dev"
+    train_fun=fun["train_fun"], predict_fun=fun["predict_fun"],
+    alpha=0.05, split=None, seed=None, randomized=False, seed_tau=None,
+    verbose=False, training_size=0.5, score="l2", s_type="alpha-max"
 )
 
-ppp2 = plot_multidim_split(final_point)
+plot_multidim_split_custom(final_point)

@@ -1,7 +1,8 @@
 from itertools import product
+from scipy.stats import uniform
+from scipy.spatial.distance import mahalanobis
 
 import numpy as np
-from scipy.spatial.distance import mahalanobis
 
 def check_input_validation(num_grid_pts_dim: int, grid_factor: float) -> None:
     """Helper function to check the validity of inputs."""
@@ -59,3 +60,46 @@ def generate_test_points_grid(y: np.ndarray, grid_factor: float, num_grid_pts_di
     ymax = np.max(np.abs(y), axis=0)
     y_marg = [np.linspace(-grid_factor * val, grid_factor * val, num_grid_pts_dim) for val in ymax]
     return np.array(list(product(*y_marg)))
+
+def log(message, verbose, prefix=""):
+    """Log messages based on verbosity level."""
+    if verbose:
+        if isinstance(verbose, str):
+            prefix = f"{verbose}: "
+        print(f"{prefix}{message}")
+
+
+def split_data_indices(n, training_size, seed=None):
+    """Split data indices into training and calibration sets."""
+    if seed is not None:
+        np.random.seed(seed)
+    training_size_n = int(np.ceil(n * training_size))
+    training_indices = np.random.choice(n, training_size_n, replace=False)
+    calibration_indices = np.setdiff1d(np.arange(n), training_indices)
+    return training_indices, calibration_indices
+
+
+def generate_tau(randomized, seed_tau=None):
+    """Generate tau for randomized conformal prediction."""
+    if not randomized:
+        return 1
+    if seed_tau is not None:
+        np.random.seed(seed_tau)
+    return uniform.rvs(loc=0, scale=1)
+
+
+def compute_mad_adjustments(
+    x_train, residuals_train, x_calibration, x0, mad_train_fun, mad_predict_fun
+):
+    """Compute MAD adjustments for residuals and predictions."""
+    mad_model = mad_train_fun(x_train, residuals_train)
+    adjusted_residuals = mad_predict_fun(mad_model, x_calibration)
+    mad_adjustment_x0 = mad_predict_fun(mad_model, x0)
+    return adjusted_residuals, mad_adjustment_x0
+
+
+def compute_prediction_bands(k_s, scaling_factors, x0_size, use_mad=False, mad_adjustments=None):
+    """Compute prediction bands for new data points."""
+    if use_mad:
+        return mad_adjustments * k_s
+    return k_s * np.tile(scaling_factors, (x0_size, 1))

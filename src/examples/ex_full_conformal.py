@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import multivariate_normal
 
-from src.helpers.prediction_models import mean_multi
+from src.helpers.prediction_models import mean_multi, lm_multi
 from src.plots.plot_full_conformal import plot_multidim_full_scatter
 from src.confidence_regions.full_conformal import conformal_multidim_full
 
@@ -27,11 +27,12 @@ x0 = multivariate_normal.rvs(mean=mu, size=n0)
 
 # Select function (mean_multi as default, can be switched to lm_multi)
 fun = mean_multi()
+#fun = lm_multi()
 
 final_full = conformal_multidim_full(
     x, y, x0,
-    fun["train.fun"],
-    fun["predict.fun"],
+    fun["train_fun"],
+    fun["predict_fun"],
     score="l2",
     num_grid_pts_dim =50,
     grid_factor=1.25,

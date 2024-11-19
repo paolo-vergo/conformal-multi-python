@@ -1,14 +1,15 @@
 import numpy as np
-from scipy.spatial.distance import mahalanobis
-from scipy.stats import uniform
 
+from src.helpers.helpers import calculate_scores, compute_prediction_bands, log, compute_mad_adjustments, generate_tau, \
+    split_data_indices
 from src.helpers.s_regression import compute_s_regression
 
 
-def conformal_multidim_split(x, y, x0, train_fun, predict_fun, alpha=0.1,
-                             split=None, seed=None, randomized=False, seed_tau=None,
-                             verbose=False, training_size=0.5, score="l2", s_type="st-dev",
-                             mad_train_fun=None, mad_predict_fun=None):
+def conformal_multidim_split(
+    x, y, x0, train_fun, predict_fun, alpha=0.1, split=None, seed=None,
+    randomized=False, seed_tau=None, verbose=False, training_size=0.5,
+    score="l2", s_type="st-dev", mad_train_fun=None, mad_predict_fun=None
+):
     """
     Split conformal prediction intervals with multivariate response.
 
@@ -34,85 +35,75 @@ def conformal_multidim_split(x, y, x0, train_fun, predict_fun, alpha=0.1,
     - dict with keys: "x0", "pred", "k_s", "s_type", "s", "alpha", "randomized",
       "tau", "average_width", "lo", "up".
     """
+    n, p = x.shape  # Number of data points and features
+    _, q = y.shape  # Number of response variables
+    n0 = x0.shape[0]  # Number of new points to evaluate
 
-    n, p = x.shape
-    q = y.shape[1]
-    n0 = x0.shape[0]
-    flag = False  # Default: no MAD functions
-
-    # Check for MAD functions
-    if mad_train_fun is not None and mad_predict_fun is not None:
+    # Determine if MAD (modulation on residuals) is being used
+    use_mad = mad_train_fun is not None and mad_predict_fun is not None
+    if use_mad:
         score = "identity"
-        flag = True
 
-    txt = ""
-    if verbose and isinstance(verbose, str):
-        txt = verbose
-        verbose = True
-
-    # Define training and calibration splits
+    # Step 1: Split data into training and calibration sets
     if split is None:
-        m = int(np.ceil(n * training_size)) - 1 if np.ceil(n * training_size) == n else int(np.ceil(n * training_size))
-        l = n - m
-
-        if seed is not None:
-            np.random.seed(seed)
-
-        training = np.random.choice(n, m, replace=False)
+        training_indices, calibration_indices = split_data_indices(n, training_size, seed)
     else:
-        training = split
+        training_indices = split
+        calibration_indices = np.setdiff1d(np.arange(n), training_indices)
 
-    calibration = np.setdiff1d(np.arange(n), training)
+    # Step 2: Generate tau for randomized conformal prediction
+    tau = generate_tau(randomized, seed_tau)
 
-    # Generate tau
-    tau = 1
-    if randomized:
-        if seed_tau is not None:
-            np.random.seed(seed_tau)
-        tau = uniform.rvs(loc=0, scale=1)
+    # Step 3: Train the model and generate predictions
+    log("Training the model on the training set...", verbose)
+    model = train_fun(x[training_indices], y[training_indices])
+    predictions_full = predict_fun(model, x)
+    predictions_x0 = predict_fun(model, x0)
 
-    # Train and compute residuals
-    if verbose:
-        print(f"{txt}Computing models on first part...")
+    # Step 4: Compute residuals and scaling factors
+    log("Calculating residuals and scaling factors...", verbose)
+    residuals = y - predictions_full
+    scaling_factors = compute_s_regression(residuals[training_indices], s_type, alpha, tau)
 
-    model = train_fun(x[training], y[training])
-    fit = predict_fun(model, x)
-    pred = predict_fun(model, x0)
+    # Rescale residuals for the calibration set
+    calibration_residuals = residuals[calibration_indices] / scaling_factors
 
-    if verbose:
-        print(f"{txt}Computing residuals and quantiles on second part...")
+    # If MAD is used, adjust residuals and predictions accordingly
+    mad_adjustment_x0 = None
+    if use_mad:
+        log("Adjusting residuals using MAD functions...", verbose)
+        adjusted_residuals, mad_adjustment_x0 = compute_mad_adjustments(
+            x[training_indices], residuals[training_indices],
+            x[calibration_indices], x0, mad_train_fun, mad_predict_fun
+        )
+        calibration_residuals /= adjusted_residuals
 
-    residuals = y - fit
-    s = compute_s_regression(residuals[training], s_type, alpha, tau)
-    resc = residuals[calibration] / s
+    # Step 5: Calculate conformity scores and determine prediction intervals
+    log("Computing conformity scores and prediction intervals...", verbose)
+    conformity_scores = calculate_scores(calibration_residuals, score)
+    l = len(calibration_indices)  # Size of the calibration set
+    k_s = np.sort(conformity_scores)[int(np.ceil(l + tau - (l + 1) * alpha)) - 1]
 
-    if flag:
-        mad_model = mad_train_fun(x[training], residuals[training])
-        resc = resc / mad_predict_fun(mad_model, x[calibration])
-        mad_x0 = mad_predict_fun(mad_model, x0)
+    average_width = np.mean(2 * k_s * scaling_factors)
 
-    # Compute scores
-    if score == "max":
-        rho = np.max(np.abs(resc), axis=1)
-    elif score == "l2":
-        rho = np.sum(resc**2, axis=1)
-    elif score == "mahalanobis":
-        rho = np.array([mahalanobis(row, np.mean(resc, axis=0), np.cov(resc, rowvar=False)) for row in resc])
-    else:
-        raise ValueError(f"Unknown score: {score}")
+    # Calculate prediction bands
+    prediction_bands = compute_prediction_bands(
+        k_s, scaling_factors, n0, use_mad=use_mad, mad_adjustments=mad_adjustment_x0
+    )
+    lower_bound = predictions_x0 - prediction_bands
+    upper_bound = predictions_x0 + prediction_bands
 
-    k_s = np.sort(rho)[int(np.ceil(l + tau - (l + 1) * alpha)) - 1]
-    avg_width = np.mean(2 * k_s * s)
-
-    if flag:
-        band = mad_x0 * k_s
-    else:
-        band = k_s * np.tile(s, (n0, 1))
-
-    lo = pred - band
-    up = pred + band
-
+    # Return results as a dictionary
     return {
-        "x0": x0, "pred": pred, "k_s": k_s, "s_type": s_type, "s": s, "alpha": alpha,
-        "randomized": randomized, "tau": tau, "average_width": avg_width, "lo": lo, "up": up
+        "x0": x0,
+        "pred": predictions_x0,
+        "k_s": k_s,
+        "s_type": s_type,
+        "s": scaling_factors,
+        "alpha": alpha,
+        "randomized": randomized,
+        "tau": tau,
+        "average_width": average_width,
+        "lo": lower_bound,
+        "up": upper_bound
     }
