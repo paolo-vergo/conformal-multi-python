@@ -36,4 +36,8 @@ final_point = conformal_multidim_split(
     verbose=False, training_size=0.5, score="l2", s_type="alpha-max"
 )
 
+print(final_point["lo"])
+print(final_point["up"])
+
+
 plot_multidim_split_custom(final_point)
