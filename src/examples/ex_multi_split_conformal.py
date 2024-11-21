@@ -1,4 +1,4 @@
-from src.confidence_regions.multi_split_conformal import conformal_multidim_msplit
+from src.prediction_regions.multi_split_conformal import conformal_multidim_msplit
 from src.helpers.generate_random_data import generate_random_data
 from src.plots.plot_split_conformal import plot_multi_split
 from src.prediction_models.models import *

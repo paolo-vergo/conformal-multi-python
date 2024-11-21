@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.confidence_regions.full_conformal import conformal_multidim_full
+from src.prediction_regions.full_conformal import conformal_multidim_full
 from src.helpers.generate_random_data import generate_random_data
 from src.plots.plot_full_conformal import plot_multi_full
 from src.prediction_models.models import get_prediction_model

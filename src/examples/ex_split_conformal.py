@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import multivariate_normal
 
-from src.confidence_regions.split_conformal import conformal_multidim_split
+from src.prediction_regions.split_conformal import conformal_multidim_split
 from src.plots.plot_split_conformal import plot_multi_split
 from src.prediction_models.models import get_prediction_model
 

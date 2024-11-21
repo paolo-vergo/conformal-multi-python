@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.confidence_regions.split_conformal import conformal_multidim_split
+from src.prediction_regions.split_conformal import conformal_multidim_split
 
 """
     Compute multidimensional conformal prediction intervals using the MultiSplit algorithm.
