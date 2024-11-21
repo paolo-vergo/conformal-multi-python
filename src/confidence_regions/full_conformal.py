@@ -51,12 +51,13 @@ Notes
 - Restricted to bivariate responses due to computational overhead.
 """
 
+
 def conformal_multidim_full(
-    x: np.ndarray, y: np.ndarray, x0: np.ndarray,
-    train_fun, predict_fun, alpha: float = 0.1,
-    mad_train_fun=None, mad_predict_fun=None,
-    score: str = 'l2', num_grid_pts_dim: int = 100,
-    grid_factor: float = 1.25, verbose: bool = False
+        x: np.ndarray, y: np.ndarray, x0: np.ndarray,
+        train_fun, predict_fun, alpha: float = 0.1,
+        mad_train_fun=None, mad_predict_fun=None,
+        score: str = 'l2', num_grid_pts_dim: int = 100,
+        grid_factor: float = 1.25, verbose: bool = False
 ) -> dict:
     """
     Main function that calculates valid conformal prediction sets for multidimensional data.
@@ -90,12 +91,10 @@ def conformal_multidim_full(
     return {"valid_points": valid_points, "pred": pred}
 
 
-
-
 def process_query_point(
-    k: int, x: np.ndarray, y: np.ndarray, x0_k: np.ndarray,
-    yvals: np.ndarray, train_fun, predict_fun,
-    mad_train_fun, mad_predict_fun, score: str, alpha: float, verbose: bool, main_model_out
+        k: int, x: np.ndarray, y: np.ndarray, x0_k: np.ndarray,
+        yvals: np.ndarray, train_fun, predict_fun,
+        mad_train_fun, mad_predict_fun, score: str, alpha: float, verbose: bool, main_model_out
 ) -> np.ndarray:
     """
     Process a single query point and compute valid target values.

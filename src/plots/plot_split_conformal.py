@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 
-def plot_multidim_split_custom(split, same_scale=False, color="blue", ci_color="red", figsize=(10, 8)):
+def plot_multi_split(split, same_scale=False, color="blue", ci_color="red", figsize=(10, 8)):
     """
     Plot Confidence Regions obtained with Split Conformal.
     If input data has 2 dimensions, create separate 3D plots for each response dimension.

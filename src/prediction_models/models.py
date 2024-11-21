@@ -4,6 +4,29 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import NearestNeighbors
 import xgboost as xgb
 
+def get_prediction_model(model_name="xgboost"):
+    """
+    Retrieve the appropriate prediction model based on the given name.
+
+    Parameters:
+        model_name (str): Name of the model to use. Options are:
+                          "mean", "linear", "random_forest", "nearest_neighbor", "xgboost".
+
+    Returns:
+        dict: A dictionary containing 'train_fun' and 'predict_fun' for the chosen model.
+    """
+    models = {
+        "mean": mean_multi,
+        "linear": multivariate_linear_regressor,
+        "random_forest": multivariate_random_forest,
+        "nearest_neighbor": multivariate_nearest_neighbor,
+        "xgboost": multivariate_xgboost,
+    }
+
+    if model_name not in models:
+        raise ValueError(f"Model '{model_name}' is not supported. Choose from {list(models.keys())}.")
+
+    return models[model_name]()
 
 def mean_multi():
     """
@@ -84,27 +107,3 @@ def multivariate_xgboost():
 
     return {"train_fun": train_fun, "predict_fun": predict_fun}
 
-
-def get_prediction_model(model_name="xgboost"):
-    """
-    Retrieve the appropriate prediction model based on the given name.
-
-    Parameters:
-        model_name (str): Name of the model to use. Options are:
-                          "mean", "linear", "random_forest", "nearest_neighbor", "xgboost".
-
-    Returns:
-        dict: A dictionary containing 'train_fun' and 'predict_fun' for the chosen model.
-    """
-    models = {
-        "mean": mean_multi,
-        "linear": multivariate_linear_regressor,
-        "random_forest": multivariate_random_forest,
-        "nearest_neighbor": multivariate_nearest_neighbor,
-        "xgboost": multivariate_xgboost,
-    }
-
-    if model_name not in models:
-        raise ValueError(f"Model '{model_name}' is not supported. Choose from {list(models.keys())}.")
-
-    return models[model_name]()

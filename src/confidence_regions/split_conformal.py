@@ -4,13 +4,7 @@ from src.helpers.helpers import calculate_scores, compute_prediction_bands, log,
     split_data_indices
 from src.helpers.s_regression import compute_s_regression
 
-
-def conformal_multidim_split(
-    x, y, x0, train_fun, predict_fun, alpha=0.1, split=None, seed=None,
-    randomized=False, seed_tau=None, verbose=False, training_size=0.5,
-    score="l2", s_type="st-dev", mad_train_fun=None, mad_predict_fun=None
-):
-    """
+"""
     Split conformal prediction intervals with multivariate response.
 
     Parameters:
@@ -35,6 +29,13 @@ def conformal_multidim_split(
     - dict with keys: "x0", "pred", "k_s", "s_type", "s", "alpha", "randomized",
       "tau", "average_width", "lo", "up".
     """
+
+
+def conformal_multidim_split(
+        x, y, x0, train_fun, predict_fun, alpha=0.1, split=None, seed=None,
+        randomized=False, seed_tau=None, verbose=False, training_size=0.5,
+        score="l2", s_type="st-dev", mad_train_fun=None, mad_predict_fun=None
+):
     n, p = x.shape  # Number of data points and features
     _, q = y.shape  # Number of response variables
     n0 = x0.shape[0]  # Number of new points to evaluate

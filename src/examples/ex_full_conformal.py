@@ -1,8 +1,8 @@
 import numpy as np
 
 from src.confidence_regions.full_conformal import conformal_multidim_full
-from src.helpers.generate_random_data import generate_data
-from src.plots.plot_full_conformal import plot_multidim_full_scatter
+from src.helpers.generate_random_data import generate_random_data
+from src.plots.plot_full_conformal import plot_multi_full
 from src.prediction_models.models import get_prediction_model
 
 n = 20  # Number of training samples
@@ -11,7 +11,7 @@ p = 2  # Number of features
 q = 2  # Dimension of the response
 mu = np.linspace(0, 1, p)
 variances = np.array([5, 20])
-x, y, x0 = generate_data(n, n0, p, mu, variances, q)
+x, y, x0 = generate_random_data(n, n0, p, mu, variances, q)
 
 my_grid = np.linspace(0, 1, num=2)
 
@@ -27,4 +27,4 @@ final_full = conformal_multidim_full(
     verbose=False
 )
 
-plot_multidim_full_scatter(final_full)
+plot_multi_full(final_full)

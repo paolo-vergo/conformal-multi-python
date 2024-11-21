@@ -1,8 +1,8 @@
 from itertools import product
 from scipy.stats import uniform
 from scipy.spatial.distance import mahalanobis
-
 import numpy as np
+
 
 def check_input_validation(num_grid_pts_dim: int, grid_factor: float) -> None:
     """Helper function to check the validity of inputs."""
@@ -29,7 +29,7 @@ def calculate_scores(residuals: np.ndarray, score: str) -> np.ndarray:
 
 
 def compute_residuals(
-    xx: np.ndarray, yy: np.ndarray, train_fun, predict_fun, iteration: int, model_out
+        xx: np.ndarray, yy: np.ndarray, train_fun, predict_fun, iteration: int, model_out
 ) -> np.ndarray:
     """
     Train the model and compute residuals for given inputs.
@@ -40,7 +40,7 @@ def compute_residuals(
 
 
 def apply_mad_scaling(
-    xx: np.ndarray, residuals: np.ndarray, mad_train_fun, mad_predict_fun, iteration: int
+        xx: np.ndarray, residuals: np.ndarray, mad_train_fun, mad_predict_fun, iteration: int
 ) -> np.ndarray:
     """
     Apply MAD scaling to residuals.
@@ -60,6 +60,7 @@ def generate_test_points_grid(y: np.ndarray, grid_factor: float, num_grid_pts_di
     ymax = np.max(np.abs(y), axis=0)
     y_marg = [np.linspace(-grid_factor * val, grid_factor * val, num_grid_pts_dim) for val in ymax]
     return np.array(list(product(*y_marg)))
+
 
 def log(message, verbose, prefix=""):
     """Log messages based on verbosity level."""
@@ -89,7 +90,7 @@ def generate_tau(randomized, seed_tau=None):
 
 
 def compute_mad_adjustments(
-    x_train, residuals_train, x_calibration, x0, mad_train_fun, mad_predict_fun
+        x_train, residuals_train, x_calibration, x0, mad_train_fun, mad_predict_fun
 ):
     """Compute MAD adjustments for residuals and predictions."""
     mad_model = mad_train_fun(x_train, residuals_train)

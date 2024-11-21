@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 
-def generate_data(n=50, n0=3, p=4, mu=None, variances=None, response_dim=2):
+def generate_random_data(n=50, n0=3, p=4, mu=None, variances=None, response_dim=2):
     """
     Generate training and test datasets with specified parameters.
     Now handles a response variable of arbitrary dimension.

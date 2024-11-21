@@ -1,9 +1,7 @@
-import numpy as np
 from src.confidence_regions.multi_split_conformal import conformal_multidim_msplit
+from src.helpers.generate_random_data import generate_random_data
+from src.plots.plot_split_conformal import plot_multi_split
 from src.prediction_models.models import *
-
-from src.helpers.generate_random_data import generate_data
-from src.plots.plot_split_conformal import plot_multidim_split_custom
 from src.prediction_models.models import get_prediction_model
 
 
@@ -34,7 +32,7 @@ def run_conformal_msplit_experiment(n=50, n0=3, p=2, mu=None, variances=None, mo
         variances = np.array([5, 20])
 
     # Generate data
-    x, y, x0 = generate_data(n, n0, p, mu, variances, response_dim)
+    x, y, x0 = generate_random_data(n, n0, p, mu, variances, response_dim)
 
     # Select the prediction model
     model = get_prediction_model(model_name)
@@ -60,4 +58,4 @@ print("Lower bounds:\n", final_multi['lo'])
 print("Upper bounds:\n", final_multi['up'])
 
 # Plot the results
-plot_multidim_split_custom(final_multi)
+plot_multi_split(final_multi)

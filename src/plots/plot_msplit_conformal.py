@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-def plot_multidim_msplit(split, same_scale=False, color="blue", ci_color="red", figsize=(10, 8)):
+
+def plot_multi_msplit(split, same_scale=False, color="blue", ci_color="red", figsize=(10, 8)):
     """
     Plot Confidence Regions obtained with Split Conformal (without prediction).
     If input data has 2 dimensions, create separate 3D plots for each response dimension.
